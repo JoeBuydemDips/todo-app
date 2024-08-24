@@ -15,7 +15,7 @@ def read_todos():
     try:
         with open("todos.csv", "r") as f:
             reader = csv.reader(f)
-            return [{"id": row[0], "task": row[1]} for row in reader if len(row) >= 2]
+            return [{"id": row[0], "task": row[1], "done": row[2]} for row in reader if len(row) >= 3]
     except FileNotFoundError:
         return []
 
@@ -23,7 +23,7 @@ def write_todos(todos):
     with open("todos.csv", "w", newline="") as f:
         writer = csv.writer(f)
         for todo in todos:
-            writer.writerow([todo["id"], todo["task"]])
+            writer.writerow([todo["id"], todo["task"], todo["done"]])
 
 def initialize_todos_file():
     try:
@@ -38,10 +38,20 @@ async def home(request: Request):
     return templates.TemplateResponse("index.html", {"request": request, "todos": todos})
 
 @app.post("/add")
-async def add_todo(task: str = Form(...)):
+async def add_todo(task: str = Form(...), done: bool = Form(False)):
     todos = read_todos()
-    new_todo = {"id": str(uuid.uuid4()), "task": task}
+    new_todo = {"id": str(uuid.uuid4()), "task": task, "done": done}
     todos.append(new_todo)
+    write_todos(todos)
+    return RedirectResponse(url="/", status_code=303)
+
+@app.post("/update/{todo_id}")
+async def update_todo(todo_id: str, done: bool = Form(...)):
+    todos = read_todos()
+    for todo in todos:
+        if todo["id"] == todo_id:
+            todo["done"] = done
+            break
     write_todos(todos)
     return RedirectResponse(url="/", status_code=303)
 

@@ -98,6 +98,11 @@ button:hover {
     overflow: hidden;
 }
 
+#todo-list li.done .todo-text {
+    text-decoration: line-through;
+    color: var(--text-color);
+}
+
 @keyframes fadeInSlide {
     from { 
         opacity: 0; 

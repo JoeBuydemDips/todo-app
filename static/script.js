@@ -21,6 +21,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // Function to update todo status
+    const updateTodoStatus = async (id, done) => {
+        await fetch(`/update/${id}`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: `done=${done}`
+        });
+    };
+
     // Add new todo
     todoForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -29,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
             await fetch('/add', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                body: `task=${encodeURIComponent(task)}`
+                body: `task=${encodeURIComponent(task)}&done=false`
             });
             todoInput.value = '';
             renderTodos();
@@ -52,6 +61,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Handle checkbox changes
+    todoList.addEventListener('change', async (e) => {
+        if (e.target.classList.contains('todo-checkbox')) {
+            const todoItem = e.target.closest('li');
+            const todoId = todoItem.dataset.id;
+            const isDone = e.target.checked;
+            
+            todoItem.classList.toggle('done', isDone);
+            await updateTodoStatus(todoId, isDone);
+        }
+    });
+
     // Dark mode toggle
     darkModeToggle.addEventListener('click', () => {
         document.body.classList.toggle('dark-mode');
@@ -67,4 +88,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initial render
     renderTodos();
+
+    // Add event listener for todo checkboxes
+    document.querySelectorAll('.todo-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', (event) => {
+            const listItem = event.target.closest('li');
+            if (event.target.checked) {
+                listItem.classList.add('done');
+            } else {
+                listItem.classList.remove('done');
+            }
+        });
+    });
 });

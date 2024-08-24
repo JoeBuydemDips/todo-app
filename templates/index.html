@@ -17,6 +17,7 @@
         <ul id="todo-list">
             {% for todo in todos %}
             <li data-id="{{ todo.id }}">
+                <input type="checkbox" class="todo-checkbox">
                 <span class="todo-text">{{ todo.task }}</span>
                 <button class="delete-btn" data-id="{{ todo.id }}">Delete</button>
             </li>
