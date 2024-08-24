@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, Form, HTTPException
+from fastapi import FastAPI, Request, Form, HTTPException, Depends
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
@@ -6,35 +6,44 @@ from fastapi.responses import RedirectResponse
 import csv
 import uuid
 import copy
+import os
+from functools import lru_cache
 
 app = FastAPI()
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
+# Use an environment variable to set the database file path, defaulting to "todos.csv"
+DEFAULT_DB_FILE = "todos.csv"
+
+@lru_cache()
+def get_db_file():
+    return os.environ.get("TODO_DB_FILE", DEFAULT_DB_FILE)
+
+# Global variable to store the last action
 last_action = {"type": None, "data": None}
 
-# Helper functions for CSV operations
-def read_todos():
+# Update helper functions to use the DB_FILE
+def read_todos(db_file: str = Depends(get_db_file)):
     try:
-        with open("todos.csv", "r") as f:
+        with open(db_file, "r") as f:
             reader = csv.reader(f)
             return [{"id": row[0], "task": row[1], "done": row[2]} for row in reader if len(row) >= 3]
     except FileNotFoundError:
         return []
     except csv.Error:
-        return []  # Return an empty list if there's an error reading the CSV
+        return []
 
-def write_todos(todos):
-    with open("todos.csv", "w", newline="") as f:
+def write_todos(todos, db_file: str = Depends(get_db_file)):
+    with open(db_file, "w", newline="") as f:
         writer = csv.writer(f)
         for todo in todos:
             writer.writerow([todo["id"], todo["task"], todo["done"]])
 
-def initialize_todos_file():
-    # Create an empty file, overwriting any existing content
-    with open("todos.csv", "w", newline="") as f:
-        pass  # This creates an empty file without writing anything
+def initialize_todos_file(db_file: str = Depends(get_db_file)):
+    with open(db_file, "w", newline="") as f:
+        pass
 
 # Add this new function to update last_action
 def update_last_action(action_type, data):
@@ -43,58 +52,52 @@ def update_last_action(action_type, data):
     print(f"Last action updated: {last_action}")  # Debug log
 
 @app.get("/", response_class=HTMLResponse)
-async def home(request: Request):
-    todos = read_todos()
+async def home(request: Request, todos: list = Depends(read_todos)):
     return templates.TemplateResponse(request, "index.html", {"todos": todos})
 
-# Update the add_todo function
 @app.post("/add")
-async def add_todo(task: str = Form(...), done: bool = Form(False)):
-    todos = read_todos()
+async def add_todo(task: str = Form(...), done: bool = Form(False), db_file: str = Depends(get_db_file)):
+    todos = read_todos(db_file)
     new_todo = {"id": str(uuid.uuid4()), "task": task, "done": str(done).lower()}
     todos.append(new_todo)
-    write_todos(todos)
+    write_todos(todos, db_file)
     update_last_action("add", new_todo)
     return RedirectResponse(url="/", status_code=303)
 
-# Update the update_todo function
 @app.post("/update/{todo_id}")
-def update_todo(todo_id: str, done: bool = Form(...)):
-    todos = read_todos()
+async def update_todo(todo_id: str, done: bool = Form(...), db_file: str = Depends(get_db_file)):
+    todos = read_todos(db_file)
     todo = next((todo for todo in todos if todo["id"] == todo_id), None)
     if todo is None:
         raise HTTPException(status_code=404, detail="Todo not found")
     old_todo = copy.deepcopy(todo)
     todo["done"] = str(done).lower()
-    write_todos(todos)
+    write_todos(todos, db_file)
     update_last_action("update", old_todo)
     return RedirectResponse(url="/", status_code=303)
 
-# Update the delete_todo function
 @app.post("/delete/{todo_id}")
-def delete_todo(todo_id: str):
-    todos = read_todos()
+async def delete_todo(todo_id: str, db_file: str = Depends(get_db_file)):
+    todos = read_todos(db_file)
     todo = next((todo for todo in todos if todo["id"] == todo_id), None)
     if todo is None:
         raise HTTPException(status_code=404, detail="Todo not found")
     todos.remove(todo)
-    write_todos(todos)
+    write_todos(todos, db_file)
     update_last_action("delete", todo)
     return RedirectResponse(url="/", status_code=303)
 
-# Update the clear_todos function
 @app.post("/clear")
-async def clear_todos():
-    old_todos = read_todos()
-    initialize_todos_file()
+async def clear_todos(db_file: str = Depends(get_db_file)):
+    old_todos = read_todos(db_file)
+    initialize_todos_file(db_file)
     update_last_action("clear", old_todos)
     return JSONResponse(content={"status": "success", "todos": []}, status_code=200)
 
-# Update the undo_last_action function
 @app.post("/undo")
-async def undo_last_action():
+async def undo_last_action(db_file: str = Depends(get_db_file)):
     global last_action
-    todos = read_todos()
+    todos = read_todos(db_file)
     
     print(f"Undo called. Last action: {last_action}")  # Debug log
     
@@ -118,12 +121,11 @@ async def undo_last_action():
         print(f"Undoing clear action: {last_action['data']}")  # Debug log
         todos = last_action["data"]
     
-    write_todos(todos)
+    write_todos(todos, db_file)
     print(f"Todos after undo: {todos}")  # Debug log
     last_action = {"type": None, "data": None}
     return JSONResponse(content={"status": "success", "todos": todos}, status_code=200)
 
-# Add this new route to check the last action
 @app.get("/last-action")
 async def get_last_action():
     return JSONResponse(content={"last_action": last_action}, status_code=200)
