@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Request, Form
+from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
@@ -32,10 +33,10 @@ def initialize_todos_file():
     except FileExistsError:
         pass  # File already exists, do nothing
 
-@app.get("/")
+@app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
     todos = read_todos()
-    return templates.TemplateResponse("index.html", {"request": request, "todos": todos})
+    return templates.TemplateResponse(request, "index.html", {"todos": todos})
 
 @app.post("/add")
 async def add_todo(task: str = Form(...), done: bool = Form(False)):
@@ -50,7 +51,7 @@ async def update_todo(todo_id: str, done: bool = Form(...)):
     todos = read_todos()
     for todo in todos:
         if todo["id"] == todo_id:
-            todo["done"] = done
+            todo["done"] = str(done).lower()  # Convert to lowercase string
             break
     write_todos(todos)
     return RedirectResponse(url="/", status_code=303)
