@@ -1,0 +1,166 @@
+:root {
+    --bg-color: #f0f0f0;
+    --container-bg: #ffffff;
+    --text-color: #333333;
+    --input-border: #dddddd;
+    --button-bg: #4CAF50;
+    --button-hover: #45a049;
+    --delete-button-bg: #f44336;
+    --delete-button-hover: #d32f2f;
+    --todo-bg: #f9f9f9;
+    --todo-border: #dddddd;
+}
+
+.dark-mode {
+    --bg-color: #333333;
+    --container-bg: #444444;
+    --text-color: #f0f0f0;
+    --input-border: #555555;
+    --button-bg: #4CAF50;
+    --button-hover: #45a049;
+    --delete-button-bg: #f44336;
+    --delete-button-hover: #d32f2f;
+    --todo-bg: #555555;
+    --todo-border: #666666;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: var(--bg-color);
+    margin: 0;
+    padding: 0;
+    transition: background-color 0.3s ease;
+}
+
+.container {
+    max-width: 600px;
+    margin: 2rem auto;
+    background-color: var(--container-bg);
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+    position: relative;
+    transition: background-color 0.3s ease;
+}
+
+h1 {
+    text-align: center;
+    color: var(--text-color);
+    transition: color 0.3s ease;
+}
+
+#todo-form {
+    display: flex;
+    margin-bottom: 1rem;
+}
+
+#todo-input {
+    flex-grow: 1;
+    padding: 0.5rem;
+    font-size: 1rem;
+    border: 1px solid var(--input-border);
+    border-radius: 4px 0 0 4px;
+    transition: border-color 0.3s ease;
+}
+
+button {
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    background-color: var(--button-bg);
+    color: white;
+    border: none;
+    border-radius: 0 4px 4px 0;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: var(--button-hover);
+}
+
+#todo-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+#todo-list li {
+    background-color: var(--todo-bg);
+    border: 1px solid var(--todo-border);
+    border-radius: 4px;
+    padding: 0.5rem 1rem;
+    margin-bottom: 0.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s ease;
+    opacity: 1;
+    transform: translateX(0);
+    overflow: hidden;
+}
+
+@keyframes fadeInSlide {
+    from { 
+        opacity: 0; 
+        transform: translateY(-20px);
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeOutSlide {
+    from { 
+        opacity: 1; 
+        transform: translateX(0);
+    }
+    to { 
+        opacity: 0; 
+        transform: translateX(-100%);
+    }
+}
+
+#todo-list li.new-item {
+    animation: fadeInSlide 0.5s ease forwards;
+}
+
+#todo-list li.deleting {
+    animation: fadeOutSlide 0.5s ease forwards;
+}
+
+.delete-btn {
+    background-color: var(--delete-button-bg);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 0.25rem 0.5rem;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: background-color 0.3s ease;
+}
+
+.delete-btn:hover {
+    background-color: var(--delete-button-hover);
+}
+
+.mode-toggle {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: background-color 0.3s ease;
+}
+
+.mode-toggle:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.todo-text {
+    color: var(--text-color);
+    transition: color 0.3s ease;
+}

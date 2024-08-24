@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beautiful TODO App</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>My TODOs</h1>
+        <button id="dark-mode-toggle" class="mode-toggle">🌙</button>
+        <form id="todo-form">
+            <input type="text" id="todo-input" placeholder="Add a new TODO" required>
+            <button type="submit">Add</button>
+        </form>
+        <ul id="todo-list">
+            {% for todo in todos %}
+            <li data-id="{{ todo.id }}">
+                <span class="todo-text">{{ todo.task }}</span>
+                <button class="delete-btn" data-id="{{ todo.id }}">Delete</button>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    <script src="/static/script.js"></script>
+</body>
+</html>
