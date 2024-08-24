@@ -1,7 +1,7 @@
 # FastAPI Todo App
 
 A simple web-based todo application built with FastAPI and Jinja2 templates.
-App was built with cursor IDE using Calude Sonnet 3.5 for code generation.
+App was built with cursor IDE using Claude Sonnet 3.5 for code generation.
 
 ## Project Structure
 
@@ -35,7 +35,7 @@ todo-app/
 
 3. Install dependencies:
    ```
-   pip install fastapi uvicorn jinja2
+   pip install -r requirements.txt
    ```
 
 ## Running the App
@@ -43,7 +43,7 @@ todo-app/
 1. Start the FastAPI server:
 
    ```
-   python main.py
+   uvicorn main:app --reload
    ```
 
 2. Open a web browser and navigate to:
@@ -56,6 +56,7 @@ todo-app/
 - Add new todos
 - Mark todos as complete/incomplete
 - Delete todos
+- Undo last action
 - Data persistence using CSV file
 
 ## Technologies Used
@@ -63,3 +64,28 @@ todo-app/
 - Backend: Python, FastAPI
 - Frontend: HTML, Jinja2 Templates
 - Data Storage: CSV
+- Testing: pytest, pytest-cov
+
+## Running Tests
+
+To run the tests, use the following command:
+
+```
+pytest
+```
+
+For test coverage report, use:
+
+```
+pytest --cov
+```
+
+## Dependencies
+
+- fastapi
+- uvicorn
+- jinja2
+- python-multipart
+- pytest
+- pytest-cov
+- httpx
