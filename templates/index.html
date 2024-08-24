@@ -14,10 +14,12 @@
             <input type="text" id="todo-input" placeholder="Add a new TODO" required>
             <button type="submit">Add</button>
         </form>
+        <button id="clear-todos">Clear All</button>
+        <button id="undo-button">Undo</button>
         <ul id="todo-list">
             {% for todo in todos %}
             <li data-id="{{ todo.id }}">
-                <input type="checkbox" class="todo-checkbox">
+                <input type="checkbox" class="todo-checkbox" {% if todo.done == "true" %}checked{% endif %}>
                 <span class="todo-text">{{ todo.task }}</span>
                 <button class="delete-btn" data-id="{{ todo.id }}">Delete</button>
             </li>
